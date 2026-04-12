@@ -8,7 +8,7 @@ Projets réalisés dans le cadre d'un cours sur Node-RED, le Machine Learning et
 
 | Nom | Projet |
 |-----|--------|
-| Nouhaila Nokry | Régression Multiple UI + Mini Projet |
+| Nouhaila Nokry | Mini Projet |
 | Imane Saoudi | Mini Projet |
 | Amane Mohamed | Mini Projet |
 
@@ -59,9 +59,14 @@ Moniteur de datacenter en temps réel simulant les métriques d'un GPU :
 - Jauges en temps réel
 - Graphiques en ligne
 - Alerte si température > 60°C
+- **Visualisation SVG dynamique** — schéma datacenter interactif avec 3 serveurs qui se mettent à jour en temps réel :
+  - Couleur de la température change selon les seuils (vert / orange / rouge)
+  - Barre de progression pour chaque métrique
+  - Ventilateur animé dont la vitesse de rotation suit le RPM réel
 
 **Technologies utilisées :**
 - `node-red-dashboard` — gauges et charts
+- `ui_template` + **SVG inline** — visualisation graphique dynamique pilotée par les données
 
 ---
 
