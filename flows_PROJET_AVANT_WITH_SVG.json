@@ -1,0 +1,424 @@
+[
+    {
+        "id": "c4c9e94acbfb3db9",
+        "type": "tab",
+        "label": "Mini_Projet_AVANT",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "inject1",
+        "type": "inject",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Tick (1s)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 680,
+        "y": 520,
+        "wires": [
+            [
+                "simulator"
+            ]
+        ]
+    },
+    {
+        "id": "simulator",
+        "type": "function",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Simulation GPU / Temp / Fan",
+        "func": "// état précédent\ncontext.temp = context.temp || 45;\ncontext.fan = context.fan || 1200;\ncontext.gpu = context.gpu || 60;\n\n// 1. GPU load (variation douce)\nlet variation = Math.random() * 10 - 5;\nlet gpu = context.gpu + variation;\ngpu = Math.max(30, Math.min(95, gpu));\n\n// 2. Température dépend du GPU (inertie thermique)\nlet temp = context.temp + (gpu - 50) * 0.03;\n\n// 3. Ventilateur dépend de la température\nlet fan = context.fan;\nif (temp > 75) {\n    fan += 200;\n} else if (temp < 65) {\n    fan -= 150;\n}\n\n// limites\nfan = Math.max(800, Math.min(4000, fan));\n\n// sauvegarde\ncontext.temp = temp;\ncontext.fan = fan;\ncontext.gpu = gpu;\n\nmsg.payload = {\n    gpu: Math.round(gpu),\n    temperature: Math.round(temp),\n    fan: Math.round(fan),\n    time: new Date().toLocaleTimeString()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 520,
+        "wires": [
+            [
+                "split"
+            ]
+        ]
+    },
+    {
+        "id": "split",
+        "type": "function",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Split metrics",
+        "func": "return [\n    { payload: msg.payload.gpu, topic: \"GPU\" },\n    { payload: msg.payload.temperature, topic: \"Temp\" },\n    { payload: msg.payload.fan, topic: \"Fan\" }\n];",
+        "outputs": 3,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 520,
+        "wires": [
+            [
+                "gauge_gpu",
+                "chart_gpu",
+                "svg_datacenter"
+            ],
+            [
+                "gauge_temp",
+                "chart_temp",
+                "alert_temp",
+                "svg_datacenter"
+            ],
+            [
+                "gauge_fan",
+                "chart_fan",
+                "svg_datacenter"
+            ]
+        ]
+    },
+    {
+        "id": "gauge_gpu",
+        "type": "ui_gauge",
+        "z": "c4c9e94acbfb3db9",
+        "name": "GPU Load",
+        "group": "grp1",
+        "order": 1,
+        "width": 6,
+        "height": 4,
+        "gtype": "gage",
+        "title": "GPU (%)",
+        "label": "",
+        "format": "",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#10b981",
+            "#f59e0b",
+            "#ef4444"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1490,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "gauge_temp",
+        "type": "ui_gauge",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Temperature",
+        "group": "grp1",
+        "order": 2,
+        "width": 6,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Temp (°C)",
+        "label": "",
+        "format": "",
+        "min": 20,
+        "max": 100,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "60",
+        "seg2": "75",
+        "diff": false,
+        "className": "",
+        "x": 1510,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "gauge_fan",
+        "type": "ui_gauge",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Fan Speed",
+        "group": "grp1",
+        "order": 3,
+        "width": 6,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Fan (RPM)",
+        "label": "",
+        "format": "",
+        "min": 0,
+        "max": 4000,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "2000",
+        "seg2": "3000",
+        "diff": false,
+        "className": "",
+        "x": 1510,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "chart_gpu",
+        "type": "ui_chart",
+        "z": "c4c9e94acbfb3db9",
+        "name": "GPU Chart",
+        "group": "grp2",
+        "order": 1,
+        "width": 6,
+        "height": 4,
+        "label": "GPU Load",
+        "chartType": "line",
+        "xformat": "HH:mm:ss",
+        "interpolate": "bezier",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "100",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": "",
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1710,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "chart_temp",
+        "type": "ui_chart",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Temp Chart",
+        "group": "grp2",
+        "order": 2,
+        "width": 6,
+        "height": 4,
+        "label": "Temperature",
+        "chartType": "line",
+        "xformat": "HH:mm:ss",
+        "interpolate": "bezier",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "100",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": "",
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1710,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "chart_fan",
+        "type": "ui_chart",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Fan Chart",
+        "group": "grp2",
+        "order": 3,
+        "width": 6,
+        "height": 4,
+        "label": "Fan Speed",
+        "chartType": "line",
+        "xformat": "HH:mm:ss",
+        "interpolate": "bezier",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "100",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": "",
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1710,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "alert_temp",
+        "type": "switch",
+        "z": "c4c9e94acbfb3db9",
+        "name": "Temp Alert",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "60",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 1510,
+        "y": 640,
+        "wires": [
+            [
+                "debug_alert",
+                "ddb60275d390987f"
+            ]
+        ]
+    },
+    {
+        "id": "debug_alert",
+        "type": "debug",
+        "z": "c4c9e94acbfb3db9",
+        "name": "ALERT HIGH TEMP",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1700,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "ddb60275d390987f",
+        "type": "ui_toast",
+        "z": "c4c9e94acbfb3db9",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "msg.payload",
+        "topic": "",
+        "name": "TEMP ALERTE",
+        "x": 1680,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "svg_datacenter",
+        "type": "ui_template",
+        "z": "c4c9e94acbfb3db9",
+        "group": "grp_svg",
+        "name": "SVG Datacenter",
+        "order": 1,
+        "width": 12,
+        "height": 10,
+        "format": "<div>\n  <svg id=\"dc-svg\" width=\"100%\" viewBox=\"0 0 680 420\">\n    <style>\n      .slabel {\n        font: 500 13px sans-serif;\n        fill: #94a3b8\n      }\n\n      .sval {\n        font: 700 20px sans-serif\n      }\n\n      .stitle {\n        font: 500 14px sans-serif;\n        fill: #cbd5e1\n      }\n\n      @keyframes spin {\n        to {\n          transform: rotate(360deg)\n        }\n      }\n    </style>\n    <rect width=\"680\" height=\"420\" rx=\"16\" fill=\"#0f172a\" />\n    <text x=\"340\" y=\"36\" text-anchor=\"middle\" fill=\"#e2e8f0\" style=\"font:600 16px sans-serif\">Data Center Monitor</text>\n\n    <!-- GPU -->\n    <rect x=\"40\" y=\"60\" width=\"180\" height=\"300\" rx=\"10\" fill=\"#1e293b\" stroke=\"#334155\" stroke-width=\"1\" />\n    <rect x=\"60\" y=\"80\" width=\"140\" height=\"18\" rx=\"4\" fill=\"#334155\" />\n    <text x=\"130\" y=\"93\" text-anchor=\"middle\" class=\"stitle\">GPU Load</text>\n    <rect x=\"60\" y=\"108\" width=\"140\" height=\"90\" rx=\"6\" fill=\"#0c1e2e\" />\n    <text id=\"gpu-val\" x=\"130\" y=\"162\" text-anchor=\"middle\" class=\"sval\" fill=\"#38bdf8\">--%</text>\n    <rect x=\"60\" y=\"250\" width=\"140\" height=\"10\" rx=\"5\" fill=\"#0f172a\" />\n    <rect id=\"gpu-bar\" x=\"60\" y=\"250\" width=\"0\" height=\"10\" rx=\"5\" fill=\"#38bdf8\" />\n    <circle cx=\"80\" cy=\"230\" r=\"8\" fill=\"#38bdf8\" />\n    <text x=\"96\" y=\"235\" class=\"slabel\">actif</text>\n    <text x=\"130\" y=\"310\" text-anchor=\"middle\" class=\"slabel\">charge processeur</text>\n\n    <!-- TEMP -->\n    <rect x=\"250\" y=\"60\" width=\"180\" height=\"300\" rx=\"10\" fill=\"#1e293b\" stroke=\"#334155\" stroke-width=\"1\" />\n    <rect x=\"270\" y=\"80\" width=\"140\" height=\"18\" rx=\"4\" fill=\"#334155\" />\n    <text x=\"340\" y=\"93\" text-anchor=\"middle\" class=\"stitle\">Température</text>\n    <rect x=\"270\" y=\"108\" width=\"140\" height=\"90\" rx=\"6\" fill=\"#0c1e10\" />\n    <text id=\"temp-val\" x=\"340\" y=\"162\" text-anchor=\"middle\" class=\"sval\" fill=\"#4ade80\">--°C</text>\n    <rect x=\"270\" y=\"250\" width=\"140\" height=\"10\" rx=\"5\" fill=\"#0f172a\" />\n    <rect id=\"temp-bar\" x=\"270\" y=\"250\" width=\"0\" height=\"10\" rx=\"5\" fill=\"#4ade80\" />\n    <circle id=\"temp-led\" cx=\"290\" cy=\"230\" r=\"8\" fill=\"#4ade80\" />\n    <text id=\"temp-status\" x=\"306\" y=\"235\" class=\"slabel\">Normal inf à 60°C</text>\n    <text x=\"340\" y=\"310\" text-anchor=\"middle\" class=\"slabel\">capteur thermique</text>\n\n    <!-- FAN -->\n    <rect x=\"460\" y=\"60\" width=\"180\" height=\"300\" rx=\"10\" fill=\"#1e293b\" stroke=\"#334155\" stroke-width=\"1\" />\n    <rect x=\"480\" y=\"80\" width=\"140\" height=\"18\" rx=\"4\" fill=\"#334155\" />\n    <text x=\"550\" y=\"93\" text-anchor=\"middle\" class=\"stitle\">Ventilateur</text>\n    <rect x=\"480\" y=\"108\" width=\"140\" height=\"90\" rx=\"6\" fill=\"#0c0c1e\" />\n    <g id=\"fan-group\">\n      <animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 550 153\" to=\"360 550 153\" dur=\"1.2s\"\n        repeatCount=\"indefinite\" id=\"fan-anim\" />\n      <ellipse cx=\"550\" cy=\"153\" rx=\"28\" ry=\"8\" fill=\"#a78bfa\" opacity=\"0.8\" />\n      <ellipse cx=\"550\" cy=\"153\" rx=\"28\" ry=\"8\" fill=\"#a78bfa\" opacity=\"0.8\" transform=\"rotate(60,550,153)\" />\n      <ellipse cx=\"550\" cy=\"153\" rx=\"28\" ry=\"8\" fill=\"#a78bfa\" opacity=\"0.8\" transform=\"rotate(120,550,153)\" />\n      <circle cx=\"550\" cy=\"153\" r=\"8\" fill=\"#c4b5fd\" />\n    </g>\n    <text id=\"fan-val\" x=\"550\" y=\"230\" text-anchor=\"middle\" class=\"sval\" fill=\"#a78bfa\">-- RPM</text>\n    <rect x=\"480\" y=\"250\" width=\"140\" height=\"10\" rx=\"5\" fill=\"#0f172a\" />\n    <rect id=\"fan-bar\" x=\"480\" y=\"250\" width=\"0\" height=\"10\" rx=\"5\" fill=\"#a78bfa\" />\n    <circle cx=\"480\" cy=\"270\" r=\"8\" fill=\"#a78bfa\" />\n    <text x=\"496\" y=\"275\" class=\"slabel\">en rotation</text>\n    <text x=\"550\" y=\"310\" text-anchor=\"middle\" class=\"slabel\">refroidissement</text>\n\n    <!-- Légende -->\n    <rect x=\"40\" y=\"380\" width=\"600\" height=\"28\" rx=\"6\" fill=\"#1e293b\" />\n    <circle cx=\"60\" cy=\"394\" r=\"5\" fill=\"#4ade80\" />\n    <text x=\"72\" y=\"398\" class=\"slabel\">Normal</text>\n    <circle cx=\"160\" cy=\"394\" r=\"5\" fill=\"#f59e0b\" />\n    <text x=\"172\" y=\"398\" class=\"slabel\">Attention 60-75°C </text>\n    <circle cx=\"280\" cy=\"394\" r=\"5\" fill=\"#ef4444\" />\n    <text x=\"292\" y=\"398\" class=\"slabel\">Critique sup à 75°C</text>\n  </svg>\n</div>\n\n<script>\n  (function(scope) {\n  var state = { gpu: null, temp: null, fan: null };\n\n  function update() {\n    var svg = document.getElementById('dc-svg');\n    if (!svg) return;\n\n    if (state.gpu !== null) {\n      svg.querySelector('#gpu-val').textContent = state.gpu + '%';\n      svg.querySelector('#gpu-bar').setAttribute('width', Math.round(state.gpu * 1.4));\n    }\n    if (state.temp !== null) {\n      var t = state.temp;\n      var color = t > 75 ? '#ef4444' : t > 60 ? '#f59e0b' : '#4ade80';\n      var status = t > 75 ? 'CRITIQUE' : t > 60 ? 'Attention' : 'Normal';\n      svg.querySelector('#temp-val').textContent = t + '°C';\n      svg.querySelector('#temp-val').setAttribute('fill', color);\n      svg.querySelector('#temp-bar').setAttribute('width', Math.round((t - 20) / 80 * 140));\n      svg.querySelector('#temp-bar').setAttribute('fill', color);\n      svg.querySelector('#temp-led').setAttribute('fill', color);\n      svg.querySelector('#temp-status').textContent = status;\n    }\n    if (state.fan !== null) {\n      var speed = Math.max(0.3, 4 - (state.fan / 1000));\n      svg.querySelector('#fan-val').textContent = state.fan + ' RPM';\n      svg.querySelector('#fan-bar').setAttribute('width', Math.round(state.fan / 4000 * 140));\n      var anim = svg.querySelector('#fan-anim');\n      if (anim) anim.setAttribute('dur', speed + 's');\n    }\n  }\n\n  scope.$watch('msg', function(msg) {\n    if (!msg || msg.payload === undefined) return;\n    var topic = msg.topic;\n    var val = msg.payload;\n\n    if (topic === 'GPU')  state.gpu  = val;\n    if (topic === 'Temp') state.temp = val;\n    if (topic === 'Fan')  state.fan  = val;\n\n    update();\n  });\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1380,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "grp1",
+        "type": "ui_group",
+        "name": "Live Metrics",
+        "tab": "tab1",
+        "order": 1,
+        "width": 6
+    },
+    {
+        "id": "grp2",
+        "type": "ui_group",
+        "name": "Charts",
+        "tab": "tab1",
+        "order": 2,
+        "width": 6
+    },
+    {
+        "id": "grp_svg",
+        "type": "ui_group",
+        "name": "SVG Datacenter",
+        "tab": "tab1",
+        "order": 3,
+        "disp": true,
+        "width": 12,
+        "collapse": false
+    },
+    {
+        "id": "tab1",
+        "type": "ui_tab",
+        "name": "Data Center Monitor",
+        "icon": "dashboard"
+    },
+    {
+        "id": "3e8fc1caaa0acce1",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
