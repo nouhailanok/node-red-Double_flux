@@ -16,37 +16,7 @@ Projets réalisés dans le cadre d'un cours sur Node-RED, le Machine Learning et
 
 ## Projets
 
-### 1. Régression Multiple UI
-**Fichier :** `flows_Régression_Multiple_UI.json`  
-**Auteur :** Nouhaila Nokry
-
-Prédiction du prix d'un bien immobilier à partir de 3 variables :
-- Superficie (m²)
-- Étage
-- Âge du bien (ans)
-
-**Technologies utilisées :**
-- `ml-regression-multivariate-linear` — modèle de régression linéaire multiple
-- `node-red-dashboard` — interface utilisateur avec champs de saisie et affichage du résultat en temps réel
-
-**Prérequis :**
-```bash
-cd ~/.node-red
-npm install ml-regression-multivariate-linear
-npm install ml-regression-simple-linear
-```
-
-Ajouter dans `settings.js` :
-```javascript
-functionGlobalContext: {
-    lr:  require('ml-regression-simple-linear').SimpleLinearRegression,
-    mlr: require('ml-regression-multivariate-linear')
-}
-```
-
----
-
-### 2. Mini Projet AVANT
+### 1. Mini Projet AVANT
 **Fichier :** `flows_Mini_Projet_AVANT.json`  
 **Équipe :** Nouhaila Nokry, Imane Saoudi, Amane Mohamed
 
