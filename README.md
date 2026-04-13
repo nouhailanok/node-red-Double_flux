@@ -86,8 +86,7 @@ npm install ml-regression-simple-linear ml-regression-multivariate-linear
 ## Structure du repo
 ```
 node-red-Double_flux/
-├── flows_Régression_Multiple_UI.json   # Régression multiple immobilier
-├── flows_Mini_Projet_AVANT.json        # Moniteur datacenter (version de base)
-├── Mini_Projet_APRES_.json             # Moniteur datacenter + MQTT + TensorFlow
+├── flows_Mini_Projet_AVANT_WITH_SVG.json        # Moniteur datacenter (version de base)
+├── Mini_Projet_APRES_avecMQTT_model.json             # Moniteur datacenter + MQTT + TensorFlow
 └── README.md
 ```
