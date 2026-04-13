@@ -29,7 +29,7 @@ Moniteur de datacenter en temps réel simulant les métriques d'un GPU :
 - Jauges en temps réel
 - Graphiques en ligne
 - Alerte si température > 60°C
-- **Visualisation SVG dynamique** — schéma datacenter interactif avec 3 serveurs qui se mettent à jour en temps réel :
+- **Visualisation SVG dynamique** — schéma datacenter interactif avec 3 métriques qui se mettent à jour en temps réel :
   - Couleur de la température change selon les seuils (vert / orange / rouge)
   - Barre de progression pour chaque métrique
   - Ventilateur animé dont la vitesse de rotation suit le RPM réel
