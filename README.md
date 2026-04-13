@@ -49,12 +49,12 @@ Version améliorée du Mini Projet avec intégration de **Mosquitto (MQTT)** et 
 **Fonctionnalités ajoutées :**
 - **MQTT (Mosquitto)** — publication et souscription des métriques sur le topic `datacenter/metrics`
 - **TensorFlow / Régression linéaire** — prédiction de surchauffe basée sur l'historique des températures (prédiction à 5 secondes)
-- Dashboard visuel HTML/CSS/JS avec Chart.js
+- Dashboard visuel
 
 **Technologies utilisées :**
 - `mosquitto` — broker MQTT local
 - `node-red-dashboard` — interface utilisateur
-- Régression linéaire sur historique de températures (modèle IA embarqué)
+- Régression linéaire sur historique de températures 
 
 **Prérequis :**
 ```bash
